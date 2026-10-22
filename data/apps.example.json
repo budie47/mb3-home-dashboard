@@ -1,0 +1,6 @@
+[
+  {"id": "proxy",    "name": "Reverse Proxy", "group": "Infrastructure", "icon": "🔀", "url": "https://proxy.example.com/",   "ip": "http://10.0.0.10:81"},
+  {"id": "grafana",  "name": "Grafana",       "group": "Infrastructure", "icon": "📈", "url": "https://grafana.example.com/", "ip": "http://10.0.0.11:3000"},
+  {"id": "photos",   "name": "Photos",        "group": "Media",          "icon": "📷", "url": "https://photos.example.com/",  "ip": "http://10.0.0.12:2283"},
+  {"id": "jellyfin", "name": "Jellyfin",      "group": "Media",          "icon": "🎬", "url": "https://media.example.com/",   "ip": "http://10.0.0.13:8096", "note": "Example note"}
+]

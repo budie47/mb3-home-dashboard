@@ -1,0 +1,6 @@
+[Unit]
+Description=Re-check status when the app list changes
+[Path]
+PathChanged=/var/www/home/apps.json
+[Install]
+WantedBy=multi-user.target

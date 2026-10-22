@@ -1,0 +1,9 @@
+[Unit]
+Description=Dashboard add/delete API
+After=network.target
+[Service]
+User=www-data
+ExecStart=/usr/local/bin/home-api
+Restart=always
+[Install]
+WantedBy=multi-user.target

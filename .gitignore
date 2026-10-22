@@ -1,0 +1,9 @@
+# Your real dashboard data - never commit (contains internal URLs/IPs)
+data/apps.json
+data/sections.json
+data/status.json
+data/icons/
+backup/
+
+# Your deploy target
+deploy.env

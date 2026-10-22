@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111317">
+<title>__TITLE__</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--text:#1c1f24;--muted:#6b7280;--border:#e3e5e8;--accent:#2f6fde;--up:#16a34a;--down:#dc2626;--unk:#9ca3af}
+@media (prefers-color-scheme:dark){:root{--bg:#111317;--card:#1a1d23;--text:#e8eaed;--muted:#9aa0a6;--border:#2a2e35;--accent:#6ea0ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{margin:0;font-size:24px;font-weight:650}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+#q{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit;width:240px;max-width:100%}
+#q:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.tools{display:flex;gap:8px;align-items:center}
+.btn{padding:9px 14px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* sections */
+.sec-head{display:flex;align-items:center;gap:6px;margin:26px 0 10px;min-height:28px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+.sec-tools{display:none;gap:2px;margin-left:6px}
+body.editing .sec-tools{display:flex}
+.tool{width:28px;height:28px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font-size:14px;cursor:pointer;display:grid;place-items:center}
+.tool:hover:not(:disabled){border-color:var(--border);background:var(--card);color:var(--text)}
+.tool.danger:hover:not(:disabled){color:var(--down)}
+.tool:disabled{opacity:.3;cursor:default}
+.empty-hint{display:none;color:var(--muted);font-size:13px;padding:14px;grid-column:1/-1;text-align:center}
+body.editing .grid:not(:has(.cell)) .empty-hint{display:block}
+
+/* cards (desktop) */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+body.editing .grid{min-height:72px;padding:6px;margin:-6px;border-radius:14px;outline:1px dashed var(--border)}
+.cell{position:relative}
+.card{position:relative;height:100%;display:flex;gap:12px;align-items:center;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s;-webkit-user-drag:none}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-1px);outline:none}
+.icon{position:relative;font-size:26px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--bg);flex:none;overflow:hidden}
+.icon img{width:30px;height:30px;object-fit:contain;pointer-events:none}
+.meta{min-width:0;flex:1}
+.name{font-weight:600}
+.host{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note{font-size:11.5px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--unk);flex:none}
+.dot.up{background:var(--up)}.dot.down{background:var(--down)}
+.ip{position:absolute;right:10px;bottom:6px;font-size:11px;color:var(--muted);text-decoration:none;opacity:0;transition:opacity .15s}
+.card:hover .ip{opacity:1}.ip:hover{color:var(--accent)}
+.edit-hint{display:none;position:absolute;inset:0;border-radius:12px;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-weight:600;font-size:13px;opacity:0;transition:opacity .15s;pointer-events:none}
+body.editing .edit-hint{display:flex}
+body.editing .card:hover .edit-hint{opacity:1}
+body.editing .card:hover .ip{opacity:0}
+body.editing .cell{cursor:grab}
+body.editing .card{border-style:dashed}
+.del{display:none;position:absolute;top:-8px;right:-8px;z-index:2;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--down);font-size:15px;line-height:1;cursor:pointer}
+.del:hover{background:var(--down);color:#fff;border-color:var(--down)}
+body.editing .del{display:block}
+.add-tile{display:none;align-items:center;justify-content:center;gap:6px;min-height:70px;border:1px dashed var(--border);border-radius:12px;background:transparent;color:var(--muted);font:inherit;cursor:pointer}
+.add-tile:hover{border-color:var(--accent);color:var(--accent)}
+body.editing .add-tile{display:flex}
+.ghost{opacity:.35}
+.sortable-fallback{opacity:.9!important;transform:rotate(2deg)}
+#newSection{display:none;margin-top:28px;width:100%;padding:14px}
+body.editing #newSection{display:block}
+footer{margin-top:32px;color:var(--muted);font-size:12px}
+
+/* phone: icon grid, no cards */
+@media (max-width:640px){
+  .wrap{padding:20px 16px 40px}
+  header{margin-bottom:4px}
+  .tools{width:100%}
+  #q{flex:1;width:auto}
+  .sec-head{margin:22px 0 8px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:16px 6px}
+  body.editing .grid{min-height:96px}
+  .card,.card:hover,.card:focus-visible{flex-direction:column;gap:6px;padding:4px 0;background:none;border:none;transform:none;text-align:center}
+  .card:active .icon{transform:scale(.92)}
+  .icon{width:60px;height:60px;border-radius:16px;font-size:32px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.18);overflow:visible;transition:transform .1s}
+  .icon img{width:42px;height:42px;border-radius:8px}
+  .meta{width:100%}
+  .name{font-size:11.5px;font-weight:500;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .host,.note,.ip,.edit-hint{display:none!important}
+  .dot{position:absolute;top:0;left:calc(50% + 22px);width:11px;height:11px;border:2px solid var(--bg)}
+  body.editing .card{border:none}
+  body.editing .icon{outline:2px dashed var(--border);outline-offset:2px}
+  .del{top:-4px;right:auto;left:calc(50% - 40px)}
+  .add-tile{min-height:auto;flex-direction:column;font-size:11.5px;border:none;padding:4px 0}
+  .add-tile b{width:60px;height:60px;border-radius:16px;border:2px dashed var(--border);display:grid;place-items:center;font-size:26px;font-weight:400}
+  footer{display:none}
+}
+@media (min-width:641px){.add-tile b{font-weight:400}}
+
+dialog{border:1px solid var(--border);border-radius:14px;background:var(--card);color:var(--text);padding:22px;width:min(440px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h3{margin:0 0 14px;font-size:18px}
+dialog label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+dialog input,dialog select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+dialog .row{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:center}
+.icon-row{display:flex;gap:12px;align-items:center}
+.icon-row .icon{width:52px;height:52px;font-size:32px;box-shadow:none;background:var(--bg)}
+.icon-row .icon img{width:40px;height:40px}
+.icon-row .grow{flex:1;min-width:0}
+dialog input[type=file]{padding:6px;font-size:13px}
+.check{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px}
+.check input{width:auto}
+.check[hidden]{display:none}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.err{background:var(--down);color:#fff;padding:8px 12px;border-radius:8px;margin:12px 0 0;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>🏠 __TITLE__</h1><div class="sub" id="status">Loading…</div></div>
+    <div class="tools">
+      <input id="q" type="search" placeholder="Search apps…  ( / )" autocomplete="off">
+      <button class="btn" id="editBtn" type="button">Edit</button>
+    </div>
+  </header>
+  <div class="err" id="err" hidden></div>
+  <main id="groups"></main>
+  <button class="btn" id="newSection" type="button">＋ New section</button>
+  <footer>Green = responding on its internal IP. Hover a card for the direct IP link. Click <b>Edit</b> to change apps and sections; drag apps to reorder or move them between sections.</footer>
+</div>
+
+<dialog id="dlg">
+  <form id="f" method="post" action="/api/apps/add" enctype="multipart/form-data">
+    <h3 id="f-title">Add application</h3>
+    <input type="hidden" name="id" id="f-id">
+    <label for="f-name">Name *</label><input id="f-name" name="name" required maxlength="60" placeholder="Pi-hole">
+    <label>Icon</label>
+    <div class="icon-row">
+      <div class="icon" id="f-preview">🔗</div>
+      <div class="grow">
+        <input id="f-file" name="iconFile" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon,.ico">
+        <div class="hint">PNG, JPG, SVG, WebP, GIF or ICO, up to 1.5 MB. Or use an emoji:</div>
+        <div class="row">
+          <input id="f-icon" name="icon" placeholder="🔗" maxlength="8" aria-label="Emoji icon">
+          <label class="check" id="f-remove-wrap" hidden><input type="checkbox" name="removeIcon" id="f-remove" value="1"> Remove image, use emoji</label>
+        </div>
+      </div>
+    </div>
+    <label for="f-url">URL *</label><input id="f-url" name="url" type="url" required placeholder="https://app.example.com/">
+    <label for="f-ip">Internal IP (optional, used for status check)</label><input id="f-ip" name="ip" type="url" placeholder="http://10.0.0.x:port">
+    <label for="f-group">Section</label><select id="f-group" name="group"></select>
+    <label for="f-note">Note (optional)</label><input id="f-note" name="note" maxlength="80">
+    <div class="actions">
+      <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+      <button class="btn primary" type="submit" id="f-submit">Add</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="sdlg">
+  <form id="sf" method="post" action="/api/sections/add">
+    <h3 id="sf-title">New section</h3>
+    <input type="hidden" name="old" id="sf-old">
+    <label for="sf-name">Section name</label><input id="sf-name" name="name" required maxlength="40" placeholder="Monitoring">
+    <div class="actions">
+      <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+      <button class="btn primary" type="submit" id="sf-submit">Create</button>
+    </div>
+  </form>
+</dialog>
+
+<script><!--# include file="vendor/Sortable.min.js" --></script>
+<script>
+let apps = <!--# include file="apps.json" -->;
+let sections = <!--# include file="sections.json" -->;
+const initial = <!--# include file="status.json" -->;
+let status = initial.apps || {};
+let dragging = false, editingApp = null;
+const $ = id => document.getElementById(id);
+const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt) e.textContent = txt; return e; };
+const isEditing = () => document.body.classList.contains('editing');
+
+function allSections() {
+  const out = [...sections];
+  apps.forEach(a => { if (!out.includes(a.group)) out.push(a.group); });
+  return out;
+}
+
+// Submit a regular form post (page reloads with the server's state).
+function post(action, fields) {
+  const f = el('form'); f.method = 'post'; f.action = action; f.hidden = true;
+  for (const [k, v] of Object.entries(fields)) { const i = el('input'); i.name = k; i.value = v; f.append(i); }
+  document.body.append(f); f.submit();
+}
+
+function iconEl(a) {
+  const box = el('div', 'icon');
+  if (a && a.iconFile) { const img = el('img'); img.src = a.iconFile; img.alt = ''; box.append(img); }
+  else box.textContent = (a && a.icon) || '🔗';
+  return box;
+}
+
+function appCell(a) {
+  const cell = el('div', 'cell'); cell.dataset.id = a.id;
+  const card = el('a', 'card'); card.href = a.url; card.target = '_blank'; card.rel = 'noopener'; card.draggable = false;
+  card.title = a.name;
+  const icon = iconEl(a);
+  card.append(icon);
+  card.addEventListener('click', e => { if (isEditing()) { e.preventDefault(); openEditor(a); } });
+  const meta = el('div', 'meta');
+  meta.append(el('div', 'name', a.name), el('div', 'host', a.url.replace(/^https?:\/\//, '').replace(/\/$/, '')));
+  if (a.note) meta.append(el('div', 'note', a.note));
+  card.append(meta);
+  const s = status[a.id];
+  const dot = el('span', 'dot' + (s ? (s.up ? ' up' : ' down') : ''));
+  dot.title = s ? (s.up ? `Up (${s.ms} ms)` : 'Not responding') : 'Unknown';
+  card.append(dot);
+  if (a.ip) {
+    const ip = el('a', 'ip', a.ip.replace(/^https?:\/\//, '')); ip.href = a.ip; ip.target = '_blank'; ip.rel = 'noopener';
+    ip.addEventListener('click', e => e.stopPropagation());
+    card.append(ip);
+  }
+  card.append(el('span', 'edit-hint', '✎ Edit'));
+  const x = el('button', 'del', '×'); x.type = 'button'; x.title = `Delete ${a.name}`;
+  x.addEventListener('click', () => { if (confirm(`Delete "${a.name}" from the dashboard?`)) post('/api/apps/delete', { id: a.id }); });
+  cell.append(card, x);
+  return cell;
+}
+
+function tool(label, title, fn, disabled, cls = 'tool') {
+  const b = el('button', cls, label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title);
+  b.disabled = !!disabled; b.addEventListener('click', fn); return b;
+}
+
+function render() {
+  if (dragging) return;
+  const q = $('q').value.trim().toLowerCase();
+  const root = $('groups'); root.innerHTML = '';
+  const list = allSections();
+  list.forEach((g, i) => {
+    const members = apps.filter(a => a.group === g && (!q || (a.name + a.url + (a.ip || '') + a.group).toLowerCase().includes(q)));
+    if (!members.length && (!isEditing() || q)) return;
+    const sec = el('section');
+    const head = el('div', 'sec-head');
+    head.append(el('h2', '', g));
+    const tools = el('div', 'sec-tools');
+    const used = apps.some(a => a.group === g);
+    tools.append(
+      tool('✎', `Rename ${g}`, () => openSection(g)),
+      tool('↑', 'Move section up', () => post('/api/sections/move', { name: g, dir: 'up' }), i === 0),
+      tool('↓', 'Move section down', () => post('/api/sections/move', { name: g, dir: 'down' }), i === list.length - 1),
+      tool('🗑', used ? 'Move or delete its apps first' : `Delete ${g}`, () => { if (confirm(`Delete the empty section "${g}"?`)) post('/api/sections/delete', { name: g }); }, used, 'tool danger'),
+    );
+    head.append(tools);
+    const grid = el('div', 'grid'); grid.dataset.group = g;
+    members.forEach(a => grid.append(appCell(a)));
+    grid.append(el('div', 'empty-hint', 'Drag apps here'));
+    const add = el('button', 'add-tile'); add.type = 'button';
+    add.append(el('b', '', '＋'), el('span', '', 'Add app'));
+    add.addEventListener('click', () => openEditor(null, g));
+    grid.append(add);
+    sec.append(head, grid);
+    root.append(sec);
+    new Sortable(grid, {
+      group: 'apps', draggable: '.cell', filter: '.del', preventOnFilter: false,
+      animation: 150, ghostClass: 'ghost', forceFallback: true, fallbackTolerance: 4,
+      delay: 250, delayOnTouchOnly: true, disabled: !isEditing() || !!q,
+      onStart: () => { dragging = true; },
+      onEnd: e => {
+        dragging = false;
+        if (e.from === e.to && e.oldDraggableIndex === e.newDraggableIndex) return;
+        moveApp(e.item.dataset.id, e.to.dataset.group, e.newDraggableIndex);
+      },
+    });
+  });
+}
+
+// Same algorithm as the server's move_app, applied locally so the UI updates instantly.
+async function moveApp(id, group, index) {
+  const app = apps.find(a => a.id === id);
+  apps.splice(apps.indexOf(app), 1);
+  app.group = group;
+  const peers = apps.filter(a => a.group === group);
+  if (index < peers.length) apps.splice(apps.indexOf(peers[index]), 0, app);
+  else if (peers.length) apps.splice(apps.indexOf(peers[peers.length - 1]) + 1, 0, app);
+  else apps.push(app);
+  render();
+  try {
+    const r = await fetch('/api/apps/move', { method: 'POST', body: new URLSearchParams({ id, group, index }) });
+    if (!r.ok || r.url.includes('err=')) throw new Error();
+  } catch {
+    post('/api/apps/move', { id, group, index });  // fall back to a normal form post
+  }
+}
+
+function showSummary(d) {
+  const up = Object.values(d.apps || {}).filter(s => s.up).length;
+  const ago = Math.max(0, Math.round(Date.now() / 1000 - d.checked));
+  $('status').textContent = d.checked ? `${up}/${apps.length} apps up · checked ${ago}s ago` : `${apps.length} apps`;
+}
+async function loadStatus() {
+  try {
+    const d = await (await fetch('status.json?' + Date.now())).json();
+    status = d.apps || {}; showSummary(d);
+  } catch { showSummary(initial); }
+  render();
+}
+
+function setEditing(on) {
+  document.body.classList.toggle('editing', on);
+  $('editBtn').textContent = on ? 'Done' : 'Edit';
+  $('editBtn').classList.toggle('primary', on);
+  try { sessionStorage.setItem('editing', on ? '1' : ''); } catch {}
+  render();
+}
+$('editBtn').addEventListener('click', () => setEditing(!isEditing()));
+
+// --- app editor
+function setPreview(src, emoji) {
+  const p = $('f-preview'); p.innerHTML = '';
+  if (src) { const img = el('img'); img.src = src; img.alt = ''; p.append(img); }
+  else p.textContent = emoji || '🔗';
+}
+function openEditor(a, group) {
+  editingApp = a;
+  $('f').reset();
+  $('f').action = a ? '/api/apps/update' : '/api/apps/add';
+  $('f-title').textContent = a ? `Edit ${a.name}` : 'Add application';
+  $('f-submit').textContent = a ? 'Save' : 'Add';
+  $('f-id').value = a ? a.id : '';
+  $('f-group').innerHTML = '';
+  allSections().forEach(g => { const o = el('option', '', g); o.value = g; $('f-group').append(o); });
+  for (const k of ['name', 'url', 'ip', 'note', 'icon']) $('f-' + k).value = (a && a[k]) || '';
+  $('f-group').value = a ? a.group : (group || allSections()[0] || '');
+  $('f-remove-wrap').hidden = !(a && a.iconFile);
+  setPreview(a && a.iconFile, a && a.icon);
+  $('dlg').showModal(); $('f-name').focus();
+}
+$('f-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file && file.size > 1.5 * 1024 * 1024) { alert('That image is too large (max 1.5 MB).'); e.target.value = ''; return; }
+  if (file) { $('f-remove').checked = false; const r = new FileReader(); r.onload = () => setPreview(r.result); r.readAsDataURL(file); }
+  else setPreview(editingApp && editingApp.iconFile, $('f-icon').value);
+});
+$('f-icon').addEventListener('input', () => { if (!$('f-file').files.length && (!editingApp || !editingApp.iconFile || $('f-remove').checked)) setPreview(null, $('f-icon').value); });
+$('f-remove').addEventListener('change', e => setPreview(e.target.checked ? null : editingApp.iconFile, $('f-icon').value));
+
+// --- section editor
+function openSection(old) {
+  $('sf').action = old ? '/api/sections/rename' : '/api/sections/add';
+  $('sf-title').textContent = old ? 'Rename section' : 'New section';
+  $('sf-submit').textContent = old ? 'Save' : 'Create';
+  $('sf-old').value = old || '';
+  $('sf-name').value = old || '';
+  $('sdlg').showModal(); $('sf-name').select();
+}
+$('newSection').addEventListener('click', () => openSection(null));
+
+const errors = {
+  invalid: "Couldn't save: a name and a valid http(s):// URL are required.",
+  icontype: "Couldn't save: the icon must be a PNG, JPG, SVG, WebP, GIF or ICO image.",
+  toolarge: "Couldn't save: the icon image is too large (max 1.5 MB).",
+  notfound: "Couldn't save: that item no longer exists.",
+  exists: "A section with that name already exists.",
+  notempty: "That section still has apps. Move or delete them first.",
+};
+const params = new URLSearchParams(location.search);
+if (params.get('err')) { $('err').textContent = errors[params.get('err')] || "Couldn't save."; $('err').hidden = false; }
+if (location.search) history.replaceState(null, '', '/');
+
+try { if (sessionStorage.getItem('editing')) document.body.classList.add('editing'); } catch {}
+setEditing(isEditing());
+showSummary(initial); loadStatus(); setInterval(loadStatus, 30000);
+$('q').addEventListener('input', render);
+document.addEventListener('keydown', e => {
+  const q = $('q');
+  if (e.key === '/' && document.activeElement !== q && !document.querySelector('dialog[open]')) { e.preventDefault(); q.focus(); }
+  if (e.key === 'Enter' && document.activeElement === q) { const c = document.querySelector('.card'); if (c) window.open(c.href, '_blank'); }
+});
+</script>
+</body>
+</html>
