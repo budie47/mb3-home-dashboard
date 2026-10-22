@@ -4,6 +4,7 @@ A small, self-hosted start page for the apps in a homelab: one click to each app
 
 - Cards grouped into sections; on phones it switches to an icon grid
 - Status check every minute against each app's internal address
+- Optional Tailscale URL per app: visitors on Tailscale (100.64.0.0/10, or a `.ts.net` hostname) get those links automatically; a header switch overrides Auto / LAN / Tailscale
 - Edit mode: add, edit and delete apps, upload icons (PNG/JPG/SVG/WebP/GIF/ICO) or use emoji
 - Create, rename, reorder and delete sections; drag apps to reorder or move between sections (touch supported)
 - No database and no build step: nginx + two small Python scripts (standard library only)

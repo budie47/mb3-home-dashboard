@@ -153,12 +153,12 @@ def remove_icon(app):
 
 def apply_fields(app, form, files):
     """Validate and copy form fields onto app. Returns False if input is invalid."""
-    name, url, ip = form.get("name", ""), form.get("url", ""), form.get("ip", "")
-    if not name or not valid_url(url) or (ip and not valid_url(ip)):
+    name, url, ip, ts = (form.get(k, "") for k in ("name", "url", "ip", "tsUrl"))
+    if not name or not valid_url(url) or any(v and not valid_url(v) for v in (ip, ts)):
         return False
     app.update(name=name[:60], url=url, group=form.get("group", "")[:40] or "Other",
                icon=form.get("icon", "")[:8] or "🔗")
-    for key, val in (("ip", ip), ("note", form.get("note", "")[:80])):
+    for key, val in (("ip", ip), ("tsUrl", ts), ("note", form.get("note", "")[:80])):
         if val:
             app[key] = val
         else:
